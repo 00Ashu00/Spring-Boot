@@ -3,10 +3,15 @@ package com.example.hospital_management_system.exceptionhandlers;
 import com.example.hospital_management_system.exceptions.AppointmentNotFoundException;
 import com.example.hospital_management_system.exceptions.DoctorNotFoundException;
 import com.example.hospital_management_system.exceptions.PatientNotFoundException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -23,6 +28,28 @@ return new ResponseEntity<String>(ex.getMessage(), HttpStatus.NOT_FOUND);
     @ExceptionHandler(AppointmentNotFoundException.class)
     public ResponseEntity<String> handleAppointmentNotFound(AppointmentNotFoundException ex) {
         return new ResponseEntity<String> (ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleValidationErrors(
+            MethodArgumentNotValidException ex) {
+
+        Map<String, String> errors = new LinkedHashMap<>();
+
+        ex.getBindingResult().getFieldErrors().forEach(error ->
+                errors.put(error.getField(), error.getDefaultMessage())
+        );
+
+        return ResponseEntity.badRequest().body(errors);
+    }
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, String>> handleDataIntegrityViolation(
+            DataIntegrityViolationException ex) {
+
+        Map<String, String> error = Map.of(
+                "error", "Cannot delete this doctor or patient because existing appointments reference them."
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
     }
 
 }

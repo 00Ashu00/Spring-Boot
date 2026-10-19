@@ -2,6 +2,7 @@ package com.example.hospital_management_system.controller;
 
 import com.example.hospital_management_system.entity.Patient;
 import com.example.hospital_management_system.service.PatientService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,8 +31,10 @@ public class PatientController {
     public Patient updatePatient(@PathVariable Long id,@RequestBody Patient patient){
        return patientService.updatePatient(id,patient);
     }
+
     @DeleteMapping("/{id}")
-    public void  deletePatient(@PathVariable Long id){
-       patientService.deletePatient(id);
+    public ResponseEntity<Void> deletePatient(@PathVariable Long id){
+        patientService.deletePatient(id);
+        return ResponseEntity.noContent().build();
     }
 }
