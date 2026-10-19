@@ -1,5 +1,6 @@
 package com.example.hospital_management_system.exceptionhandlers;
 
+import com.example.hospital_management_system.exceptions.AppointmentNotFoundException;
 import com.example.hospital_management_system.exceptions.DoctorNotFoundException;
 import com.example.hospital_management_system.exceptions.PatientNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,10 @@ return new ResponseEntity<String>(ex.getMessage(), HttpStatus.NOT_FOUND);
     @ExceptionHandler(PatientNotFoundException.class)
     public ResponseEntity<String> handlePatientNotFound(PatientNotFoundException ex) {
         return new ResponseEntity<String>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+    @ExceptionHandler(AppointmentNotFoundException.class)
+    public ResponseEntity<String> handleAppointmentNotFound(AppointmentNotFoundException ex) {
+        return new ResponseEntity<String> (ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
 }
