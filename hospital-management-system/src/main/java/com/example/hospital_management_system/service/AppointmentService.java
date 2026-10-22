@@ -1,6 +1,7 @@
 
 package com.example.hospital_management_system.service;
 
+import com.example.hospital_management_system.controller.AppointmentController;
 import com.example.hospital_management_system.dto.AppointmentRequest;
 import com.example.hospital_management_system.entity.Appointment;
 import com.example.hospital_management_system.entity.Doctor;
@@ -11,12 +12,17 @@ import com.example.hospital_management_system.exceptions.PatientNotFoundExceptio
 import com.example.hospital_management_system.repository.AppointmentRepository;
 import com.example.hospital_management_system.repository.DoctorRepository;
 import com.example.hospital_management_system.repository.PatientRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AppointmentService {
+
+    private static final Logger logger =
+            LoggerFactory.getLogger(AppointmentController.class);
 
     private final AppointmentRepository appointmentRepository;
     private final DoctorRepository doctorRepository;
@@ -33,10 +39,12 @@ public class AppointmentService {
     }
 
     public Page<Appointment> getAllAppointments(Pageable pageable) {
+        logger.info("fetching all appointments");
         return appointmentRepository.findAll(pageable);
     }
 
     public Appointment findByAppointmentId(long id) {
+        logger.info("fetching appointment with id={}", id);
         return appointmentRepository.findById(id)
                 .orElseThrow(() ->
                         new AppointmentNotFoundException(
@@ -67,7 +75,7 @@ public class AppointmentService {
     }
 
     public Appointment updateAppointment(Long id, AppointmentRequest request) {
-
+logger.info("updating appointment with id={}", id);
         Appointment updatedAppointment = findByAppointmentId(id);
 
         Doctor doctor = doctorRepository.findById(request.getDoctorId())
@@ -90,6 +98,7 @@ public class AppointmentService {
     }
 
     public void deleteAppointment(Long id) {
+        logger.info("deleting appointment with id={}", id);
         findByAppointmentId(id);
         appointmentRepository.deleteById(id);
     }
