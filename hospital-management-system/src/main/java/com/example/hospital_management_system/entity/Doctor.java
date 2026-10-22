@@ -1,9 +1,16 @@
 package com.example.hospital_management_system.entity;
 
 import jakarta.persistence.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.LocalDateTime;
+
 
 @Entity
 @Table(name = "doctors")
+@EntityListeners(AuditingEntityListener.class)
 public class
 Doctor {
     @Id
@@ -12,6 +19,13 @@ Doctor {
     private String name;
     private String specialization;
     private String email;
+    @CreatedDate
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
 
 public Doctor() {
 }
@@ -47,6 +61,13 @@ public Doctor() {
         this.name = name;
         this.specialization = specialization;
         this.email = email;
+    }
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 }
 

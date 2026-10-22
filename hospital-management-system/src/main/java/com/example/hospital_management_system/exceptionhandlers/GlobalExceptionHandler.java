@@ -48,15 +48,19 @@ log.error(ex.getMessage());
 
         return ResponseEntity.badRequest().body(errors);
     }
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Map<String, String>> handleDataIntegrityViolation(
             DataIntegrityViolationException ex) {
-log.error(ex.getMessage());
+
+        log.error("Database integrity violation", ex);
+
         Map<String, String> error = Map.of(
-                "error", "Cannot delete this doctor or patient because existing appointments reference them."
+                "error", "Database integrity constraint violated. Check the application logs for details."
         );
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
     }
+
 
 }
