@@ -5,6 +5,7 @@ import com.example.hospital_management_system.exceptions.DoctorNotFoundException
 import com.example.hospital_management_system.repository.DoctorRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -40,6 +41,7 @@ public class DoctorService {
 
         return doctorRepository.save(existingDoctor);
     }
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteDoctor(Long id) {
         logger.info("deleteDoctor");
             getDoctorById(id);
