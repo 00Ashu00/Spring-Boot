@@ -17,6 +17,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import com.example.hospital_management_system.config.JwtAuthenticationFilter;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 
 @EnableMethodSecurity
@@ -46,9 +49,12 @@ public class SecurityConfig {
         return provider;
     }
     private final CustomAccessDeniedHandler accessDeniedHandler;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    public SecurityConfig(CustomAccessDeniedHandler accessDeniedHandler) {
+
+    public SecurityConfig(CustomAccessDeniedHandler accessDeniedHandler,JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.accessDeniedHandler = accessDeniedHandler;
+        this.jwtAuthenticationFilter =jwtAuthenticationFilter;
     }
     @Bean
     public SecurityFilterChain securityFilterChain(
@@ -76,6 +82,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/auth/signup",
+                                "/auth/login",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
@@ -94,8 +101,11 @@ public class SecurityConfig {
 
                 .formLogin(form -> form
                         .defaultSuccessUrl("/api/doctors", true)
-                );
-
+                )
+            .addFilterBefore(
+                jwtAuthenticationFilter,
+                UsernamePasswordAuthenticationFilter.class
+        );
         return http.build();
     }
 }

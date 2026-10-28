@@ -9,6 +9,10 @@ public class HospitalManagementSystemApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(HospitalManagementSystemApplication.class, args);
+
+		String secret = System.getenv("JWT_SECRET");
+		System.out.println("JWT_SECRET configured: "
+				+ (secret != null && !secret.isBlank()));
 	}
 
 }
