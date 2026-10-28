@@ -57,7 +57,6 @@ public class SecurityConfig {
         return provider;
     }
 
-    // Chain 1: Stateless JWT authentication for API requests
     @Bean
     @Order(1)
     public SecurityFilterChain apiSecurityFilterChain(
@@ -95,7 +94,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // Chain 2: Browser login and other non-API requests
     @Bean
     @Order(2)
     public SecurityFilterChain browserSecurityFilterChain(

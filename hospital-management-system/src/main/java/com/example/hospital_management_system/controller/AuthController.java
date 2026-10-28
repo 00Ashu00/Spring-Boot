@@ -7,6 +7,7 @@ import com.example.hospital_management_system.entity.User;
 
 import com.example.hospital_management_system.service.AuthService;
 import com.example.hospital_management_system.service.JwtService;
+import com.example.hospital_management_system.service.SessionService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,6 +25,9 @@ import java.util.List;
 public class AuthController {
     private AuthenticationManager  authenticationManager;
     private JwtService jwtService;
+    private SessionService sessionService;
+
+
 
     @Autowired
     private void setJwtService (JwtService jwtService) {
@@ -31,8 +35,9 @@ public class AuthController {
     }
 
     @Autowired
-    private AuthController(AuthenticationManager authenticationManager){
+    private AuthController(AuthenticationManager authenticationManager,SessionService sessionService){
         this.authenticationManager = authenticationManager;
+        this.sessionService = sessionService;
     }
 
 
@@ -73,7 +78,9 @@ public class AuthController {
                         )
                 );
 
-        return jwtService.generateToken(authentication.getName());
+       String token= jwtService.generateToken(authentication.getName());
+        sessionService.replaceSession(authentication.getName(), token);
+        return token;
     }
 
 

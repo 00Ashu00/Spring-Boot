@@ -2,6 +2,7 @@ package com.example.hospital_management_system.config;
 
 import com.example.hospital_management_system.service.CustomUserDetailsService;
 import com.example.hospital_management_system.service.JwtService;
+import com.example.hospital_management_system.service.SessionService;
 import com.example.hospital_management_system.service.TokenRevocationService;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -24,13 +25,14 @@ import java.io.IOException;
         private final JwtService jwtService;
         private final CustomUserDetailsService userDetailsService;
         private final TokenRevocationService tokenRevocationService;
-
+        private final SessionService sessionService;
         public JwtAuthenticationFilter(
                 JwtService jwtService,
-                CustomUserDetailsService userDetailsService,TokenRevocationService tokenRevocationService) {
+                CustomUserDetailsService userDetailsService, TokenRevocationService tokenRevocationService, SessionService sessionService) {
             this.jwtService = jwtService;
             this.userDetailsService = userDetailsService;
             this.tokenRevocationService = tokenRevocationService;
+            this.sessionService =sessionService;
         }
 
         @Override
@@ -49,6 +51,11 @@ import java.io.IOException;
             String token = authHeader.substring(7);
             try {
                 String username = jwtService.extractUsername(token);
+                if (!sessionService.isTokenActive(token)) {
+                    SecurityContextHolder.clearContext();
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    return;
+                }
                 if (username == null || username.isBlank()) {
                     SecurityContextHolder.clearContext();
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
