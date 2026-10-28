@@ -3,6 +3,7 @@ package com.example.hospital_management_system.config;
 
 import com.example.hospital_management_system.service.CustomUserDetailsService;
 
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -26,12 +27,14 @@ public class SecurityConfig {
 
     private final CustomAccessDeniedHandler accessDeniedHandler;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final LoggingFilter loggingFilter;
 
     public SecurityConfig(
             CustomAccessDeniedHandler accessDeniedHandler,
-            JwtAuthenticationFilter jwtAuthenticationFilter) {
+            JwtAuthenticationFilter jwtAuthenticationFilter,LoggingFilter loggingFilter) {
         this.accessDeniedHandler = accessDeniedHandler;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+       this.loggingFilter = loggingFilter;
     }
 
     @Bean
@@ -43,6 +46,16 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+    @Bean
+    public FilterRegistrationBean<LoggingFilter> loggingFilterRegistration(
+            LoggingFilter loggingFilter) {
+
+        FilterRegistrationBean<LoggingFilter> registration =
+                new FilterRegistrationBean<>(loggingFilter);
+
+        registration.setEnabled(false);
+        return registration;
     }
 
     @Bean
@@ -86,13 +99,18 @@ public class SecurityConfig {
                         .requestMatchers("/api/doctors/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
+
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
+                ) .addFilterBefore(
+                        loggingFilter,
+                        JwtAuthenticationFilter.class
                 );
 
         return http.build();
     }
+
 
     @Bean
     @Order(2)
@@ -113,9 +131,11 @@ public class SecurityConfig {
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
+
                 .formLogin(form -> form
                         .defaultSuccessUrl("/login-success", true)
-                );
+                )
+                .addFilterBefore(loggingFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
