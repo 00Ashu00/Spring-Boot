@@ -76,5 +76,6 @@ public class AuthController {
         return jwtService.generateToken(authentication.getName());
     }
 
+
 }
 
