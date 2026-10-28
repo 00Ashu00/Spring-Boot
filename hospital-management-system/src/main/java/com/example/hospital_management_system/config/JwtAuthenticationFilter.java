@@ -2,6 +2,7 @@ package com.example.hospital_management_system.config;
 
 import com.example.hospital_management_system.service.CustomUserDetailsService;
 import com.example.hospital_management_system.service.JwtService;
+import com.example.hospital_management_system.service.TokenRevocationService;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -10,6 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -21,12 +23,14 @@ import java.io.IOException;
 
         private final JwtService jwtService;
         private final CustomUserDetailsService userDetailsService;
+        private final TokenRevocationService tokenRevocationService;
 
         public JwtAuthenticationFilter(
                 JwtService jwtService,
-                CustomUserDetailsService userDetailsService) {
+                CustomUserDetailsService userDetailsService,TokenRevocationService tokenRevocationService) {
             this.jwtService = jwtService;
             this.userDetailsService = userDetailsService;
+            this.tokenRevocationService = tokenRevocationService;
         }
 
         @Override
@@ -45,11 +49,18 @@ import java.io.IOException;
             String token = authHeader.substring(7);
             try {
                 String username = jwtService.extractUsername(token);
-                if (username == null) {
-                    filterChain.doFilter(request, response);
+                if (username == null || username.isBlank()) {
+                    SecurityContextHolder.clearContext();
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    return;
+                }
+                if (tokenRevocationService.isTokenRevoked(token)) {
+                    SecurityContextHolder.clearContext();
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     return;
                 }
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
 
                 if (SecurityContextHolder.getContext().getAuthentication() == null
                         && jwtService.isTokenValid(token, userDetails.getUsername())) {
@@ -68,10 +79,10 @@ import java.io.IOException;
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
             }
-         catch (JwtException | IllegalArgumentException ex) {
-            SecurityContextHolder.clearContext();
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
+         catch (JwtException | IllegalArgumentException | UsernameNotFoundException ex) {
+             SecurityContextHolder.clearContext();
+             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+             return;
         }
             filterChain.doFilter(request, response);
         }

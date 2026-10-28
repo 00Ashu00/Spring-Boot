@@ -47,4 +47,12 @@ public class JwtService {
 
         return tokenUsername.equals(username);
     }
+    public Date extractExpiration(String token) {
+        return Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getExpiration();
+    }
 }
