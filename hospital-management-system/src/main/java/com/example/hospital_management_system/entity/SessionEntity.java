@@ -1,27 +1,38 @@
 package com.example.hospital_management_system.entity;
 
-
 import jakarta.persistence.*;
+import java.time.Instant;
 
 @Entity
-@Table(name = "user_sessions",
-        uniqueConstraints = @UniqueConstraint(columnNames = "user_id"))
+@Table(name = "user_sessions")
 public class SessionEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Column(name = "user_id", nullable = false)
     private Long userId;
-    @Column(nullable = false)
-    private String token;
 
-    public SessionEntity( String token, Long userId) {
+    @Column(name = "refresh_token", nullable = false)
+    private String refreshToken;
 
-        this.token = token;
-        this.userId = userId;
+    private Instant lastUsedAt;
+
+    public SessionEntity() {
     }
-    public SessionEntity() {}
+
+    public SessionEntity(Long userId, String refreshToken, Instant lastUsedAt) {
+        this.userId = userId;
+        this.refreshToken = refreshToken;
+        this.lastUsedAt = lastUsedAt;
+    }
+
+    // Getters and setters
+
+    public Long getId() {
+        return id;
+    }
 
     public Long getUserId() {
         return userId;
@@ -31,19 +42,20 @@ public class SessionEntity {
         this.userId = userId;
     }
 
-    public Long getId() {
-        return id;
+    public String getRefreshToken() {
+        return refreshToken;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 
-    public String getToken() {
-        return token;
+    public Instant getLastUsedAt() {
+        return lastUsedAt;
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    public void setLastUsedAt(Instant lastUsedAt) {
+        this.lastUsedAt = lastUsedAt;
     }
 }
+

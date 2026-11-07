@@ -10,6 +10,9 @@ import com.example.hospital_management_system.service.JwtService;
 import com.example.hospital_management_system.service.SessionService;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 
 import java.util.List;
 
@@ -68,7 +72,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest) {
 
         Authentication authentication =
                 authenticationManager.authenticate(
@@ -78,9 +82,21 @@ public class AuthController {
                         )
                 );
 
-       String token= jwtService.generateToken(authentication.getName());
-        sessionService.replaceSession(authentication.getName(), token);
-        return token;
+       String accessToken= jwtService.generateAccessToken(authentication.getName());
+       String refreshToken=jwtService.generateRefreshToken(authentication.getName());
+        sessionService.saveSession(authentication.getName(), refreshToken);
+
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
+                .httpOnly(true)
+                .secure(false)
+                .sameSite("Strict")
+                .path("/auth")
+                .maxAge(7 * 24 * 60 * 60)
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(accessToken);
     }
 
 

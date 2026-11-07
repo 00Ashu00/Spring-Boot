@@ -1,12 +1,13 @@
-
 package com.example.hospital_management_system.config;
 
 import com.example.hospital_management_system.service.CustomUserDetailsService;
 
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -31,10 +32,12 @@ public class SecurityConfig {
 
     public SecurityConfig(
             CustomAccessDeniedHandler accessDeniedHandler,
-            JwtAuthenticationFilter jwtAuthenticationFilter,LoggingFilter loggingFilter) {
+            JwtAuthenticationFilter jwtAuthenticationFilter,
+            LoggingFilter loggingFilter) {
+
         this.accessDeniedHandler = accessDeniedHandler;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-       this.loggingFilter = loggingFilter;
+        this.loggingFilter = loggingFilter;
     }
 
     @Bean
@@ -43,10 +46,12 @@ public class SecurityConfig {
         return configuration.getAuthenticationManager();
     }
 
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
     @Bean
     public FilterRegistrationBean<LoggingFilter> loggingFilterRegistration(
             LoggingFilter loggingFilter) {
@@ -78,32 +83,47 @@ public class SecurityConfig {
             throws Exception {
 
         http
-                .securityMatcher("/api/**")
+                .securityMatcher("/api/**", "/auth/**")
+
                 .csrf(csrf -> csrf.disable())
+
                 .authenticationProvider(authenticationProvider)
+
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
+
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(
                                 new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)
                         )
                         .accessDeniedHandler(accessDeniedHandler)
                 )
+
                 .authorizeHttpRequests(auth -> auth
+
                         .requestMatchers(
-                                org.springframework.http.HttpMethod.GET,
+                                "/auth/login",
+                                "/auth/signup"
+                        ).permitAll()
+
+                        .requestMatchers(
+                                HttpMethod.GET,
                                 "/api/doctors",
                                 "/api/doctors/**"
                         ).hasAnyRole("DOCTOR", "ADMIN")
+
                         .requestMatchers("/api/doctors/**").hasRole("ADMIN")
+
                         .anyRequest().authenticated()
                 )
 
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
-                ) .addFilterBefore(
+                )
+
+                .addFilterBefore(
                         loggingFilter,
                         JwtAuthenticationFilter.class
                 );
@@ -111,7 +131,7 @@ public class SecurityConfig {
         return http.build();
     }
 
-
+    // Browser-based authentication
     @Bean
     @Order(2)
     public SecurityFilterChain browserSecurityFilterChain(
@@ -121,21 +141,26 @@ public class SecurityConfig {
 
         http
                 .csrf(csrf -> csrf.disable())
+
                 .authenticationProvider(authenticationProvider)
+
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/auth/signup",
-                                "/auth/login",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
+
                         .anyRequest().authenticated()
                 )
 
                 .formLogin(form -> form
                         .defaultSuccessUrl("/login-success", true)
                 )
-                .addFilterBefore(loggingFilter, UsernamePasswordAuthenticationFilter.class);
+
+                .addFilterBefore(
+                        loggingFilter,
+                        UsernamePasswordAuthenticationFilter.class
+                );
 
         return http.build();
     }
