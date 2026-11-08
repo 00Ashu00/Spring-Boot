@@ -104,7 +104,9 @@ public class SecurityConfig {
 
                         .requestMatchers(
                                 "/auth/login",
-                                "/auth/signup"
+                                "/auth/signup",
+                                "/auth/refresh",
+                                "/auth/logout"
                         ).permitAll()
 
                         .requestMatchers(

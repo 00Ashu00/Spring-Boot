@@ -21,6 +21,7 @@ public class JwtService {
     @Value("${jwt.refresh-expiration}")
     private long refreshExpiration;
 
+
     private SecretKey getSigningKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secret);
         return Keys.hmacShaKeyFor(keyBytes);
@@ -32,6 +33,7 @@ public class JwtService {
 
         return Jwts.builder()
                 .subject(username)
+                .claim("type", "access")
                 .issuedAt(now)
                 .expiration(expiry)
                 .signWith(getSigningKey())
@@ -43,11 +45,13 @@ public class JwtService {
 
         return Jwts.builder()
                 .subject(username)
+                .claim("type", "refresh")
                 .issuedAt(now)
                 .expiration(expiry)
                 .signWith(getSigningKey())
                 .compact();
     }
+
     public String extractUsername(String token) {
         return Jwts.parser()
                 .verifyWith(getSigningKey())
@@ -68,5 +72,20 @@ public class JwtService {
                 .parseSignedClaims(token)
                 .getPayload()
                 .getExpiration();
+    }
+    public boolean isRefreshToken(String token) {
+        try {
+            String type = Jwts.parser()
+                    .verifyWith(getSigningKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload()
+                    .get("type", String.class);
+
+            return "refresh".equals(type);
+
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
