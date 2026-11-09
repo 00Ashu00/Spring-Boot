@@ -5,7 +5,10 @@ import com.example.hospital_management_system.exceptions.DoctorNotFoundException
 import com.example.hospital_management_system.repository.DoctorRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -31,6 +34,7 @@ public class DoctorService {
         logger.info("saveDoctor");
         return doctorRepository.save(doctor);
     }
+    @PreAuthorize("hasAuthority('DOCTOR_UPDATE')")
     public Doctor updateDoctor(Long id, Doctor doctor) {
         logger.info("updateDoctor");
         Doctor existingDoctor = getDoctorById(id);
@@ -38,10 +42,15 @@ public class DoctorService {
         existingDoctor.setName(doctor.getName());
         existingDoctor.setSpecialization(doctor.getSpecialization());
         existingDoctor.setEmail(doctor.getEmail());
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        System.out.println("Username: " + authentication.getName());
+        System.out.println("Authorities: " + authentication.getAuthorities());
 
         return doctorRepository.save(existingDoctor);
     }
-    @PreAuthorize("hasRole('ADMIN')")
+    @Secured("ROLE_ADMIN")
     public void deleteDoctor(Long id) {
         logger.info("deleteDoctor");
             getDoctorById(id);
