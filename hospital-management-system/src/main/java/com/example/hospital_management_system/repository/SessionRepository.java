@@ -14,5 +14,6 @@ public interface SessionRepository extends JpaRepository<SessionEntity, Long> {
     List<SessionEntity> findAllByUserId(Long userId);
 
     void deleteByUserId(Long userId);
+    boolean existsByAccessToken(String accessToken);
 }
 

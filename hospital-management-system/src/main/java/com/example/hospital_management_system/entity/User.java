@@ -23,6 +23,18 @@ public class User {
 
     @Column(nullable = false)
     private String role;
+
+    @Column(nullable = false)
+    private int sessionLimitCount = 1;
+
+    public int getSessionLimitCount() {
+        return sessionLimitCount;
+    }
+
+    public void setSessionLimitCount(int sessionLimitCount) {
+        this.sessionLimitCount = sessionLimitCount;
+    }
+
     public User(String username, String password, String role) {
         this.username = username;
         this.password = password;

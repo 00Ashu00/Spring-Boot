@@ -18,18 +18,28 @@ public class SessionEntity {
     private String refreshToken;
 
     private Instant lastUsedAt;
+    @Column(name = "access_token", nullable = false)
+    private String accessToken;
+
+    public String getAccessToken() {
+        return accessToken;
+
+    }
+
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
+    }
 
     public SessionEntity() {
     }
 
-    public SessionEntity(Long userId, String refreshToken, Instant lastUsedAt) {
+    public SessionEntity(Long userId, String accessToken,
+                         String refreshToken, Instant lastUsedAt) {
         this.userId = userId;
+        this.accessToken = accessToken;
         this.refreshToken = refreshToken;
         this.lastUsedAt = lastUsedAt;
     }
-
-    // Getters and setters
-
     public Long getId() {
         return id;
     }

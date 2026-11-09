@@ -133,7 +133,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // Browser-based authentication
     @Bean
     @Order(2)
     public SecurityFilterChain browserSecurityFilterChain(

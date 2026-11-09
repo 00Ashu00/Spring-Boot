@@ -86,7 +86,7 @@ public class AuthController {
 
        String accessToken= jwtService.generateAccessToken(authentication.getName());
        String refreshToken=jwtService.generateRefreshToken(authentication.getName());
-        sessionService.replaceUserSession(authentication.getName(), refreshToken);
+        sessionService.saveSession(authentication.getName(), accessToken, refreshToken);
 
         ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
@@ -127,7 +127,7 @@ public class AuthController {
         String newAccessToken = jwtService.generateAccessToken(username);
         String newRefreshToken = jwtService.generateRefreshToken(username);
 
-        sessionService.updateRefreshToken(refreshToken, newRefreshToken);
+        sessionService.updateTokens(refreshToken, newAccessToken, newRefreshToken);
 
         ResponseCookie cookie = ResponseCookie.from("refreshToken", newRefreshToken)
                 .httpOnly(true)

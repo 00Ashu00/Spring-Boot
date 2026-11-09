@@ -2,6 +2,7 @@ package com.example.hospital_management_system.config;
 
 import com.example.hospital_management_system.service.CustomUserDetailsService;
 import com.example.hospital_management_system.service.JwtService;
+import com.example.hospital_management_system.service.SessionService;
 import com.example.hospital_management_system.service.TokenRevocationService;
 
 import io.jsonwebtoken.JwtException;
@@ -26,14 +27,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
     private final TokenRevocationService tokenRevocationService;
-
+    private final SessionService sessionService;
     public JwtAuthenticationFilter(
             JwtService jwtService,
             CustomUserDetailsService userDetailsService,
-            TokenRevocationService tokenRevocationService) {
+            TokenRevocationService tokenRevocationService, SessionService sessionService) {
 
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
+        this.sessionService = sessionService;
         this.tokenRevocationService = tokenRevocationService;
     }
 
@@ -63,6 +65,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             if (tokenRevocationService.isTokenRevoked(token)) {
+                SecurityContextHolder.clearContext();
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
+            }
+            if (!sessionService.isAccessTokenActive(token)) {
                 SecurityContextHolder.clearContext();
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return;

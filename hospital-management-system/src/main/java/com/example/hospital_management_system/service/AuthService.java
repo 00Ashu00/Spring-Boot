@@ -30,4 +30,11 @@ public class AuthService {
         return userRepository.save(user);
 
     }
+    public void updateRole(Long userId, String role) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        user.setRole(role);
+        userRepository.save(user);
+    }
 }
