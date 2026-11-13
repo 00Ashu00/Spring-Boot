@@ -42,11 +42,6 @@ public class DoctorService {
         existingDoctor.setName(doctor.getName());
         existingDoctor.setSpecialization(doctor.getSpecialization());
         existingDoctor.setEmail(doctor.getEmail());
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-
-        System.out.println("Username: " + authentication.getName());
-        System.out.println("Authorities: " + authentication.getAuthorities());
 
         return doctorRepository.save(existingDoctor);
     }
